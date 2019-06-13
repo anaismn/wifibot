@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>robot.PNG</file>
+        <file>web.jpg</file>
+        <file>apple.png</file>
+        <file>logoapp.png</file>
+        <file>pause.svg</file>
+        <file>right.svg</file>
+        <file>play.svg</file>
+        <file>down.svg</file>
+        <file>left.svg</file>
+        <file>up.svg</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>logoapp.png</file>
+        <file>anais.mp4</file>
+        <file>primous.mp4</file>
+    </qresource>
+</RCC>
