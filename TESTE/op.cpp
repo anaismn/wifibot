@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QGraphicsView>
 #include <QMediaPlayer>
+#include  <QKeyEvent>
+#include <QFileDialog>
 OP::OP(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::OP)
@@ -24,6 +26,8 @@ OP::OP(QWidget *parent) :
     else{
 
     }*/
+
+    text="192.168.15.5";
     QMediaPlayer * music = new QMediaPlayer();
     music->setMedia(QUrl("qrc:/primous.mp4"));
     music->play();
@@ -37,7 +41,7 @@ OP::OP(QWidget *parent) :
     }
 
     ui->batterieBar->setValue(0);
-    ui->energie->display(12);
+
     QTimer *timer= new QTimer();
     timer->connect(timer,SIGNAL(timeout()),this,SLOT(miseAJour()));
     timer->start(2000);
@@ -47,7 +51,6 @@ OP::OP(QWidget *parent) :
     timer2->setInterval(25);
     timer2->connect(timer2, SIGNAL(timeout()),this,SLOT(envoi()));
     timer2->start(25);
-
 
 }
 
@@ -67,7 +70,7 @@ void OP::on_pushButton_2_clicked()
     ui->led->setToolTip("SUPER!! VOUS ETES AU ROBOT");
 
     this->view = new QWebEngineView(ui->cameraView);
-    this->view->load(QUrl("http://192.168.1.106:8080/?action=stream"));
+    this->view->load(QUrl("http://192.168.1.11:8080/?action=stream"));
     this->view->resize(341,311);
     this->view->show();
     QMessageBox msg;
@@ -196,7 +199,7 @@ void OP::Deplacement(unsigned char leftspeed, unsigned char rightspeed, int Dire
       short crc=Crc16(castData+1,6);
       this->robot.DataToSend[7]=(char)crc;
       this->robot.DataToSend[8]=(char)(crc>>8);
-
+/*
       qDebug()<<"Datatosend[0]              :--------"<<dtobin(castData[0]);
       qDebug()<<"Datatosend[1]              :--------"<<dtobin(castData[1]);
       qDebug()<<"Datatosend[2]              :--------"<<dtobin(castData[2]);
@@ -205,7 +208,7 @@ void OP::Deplacement(unsigned char leftspeed, unsigned char rightspeed, int Dire
       qDebug()<<"Datatosend[5]              :--------"<<dtobin(castData[5]);
       qDebug()<<"Datatosend[6]              :--------"<<dtobin(castData[6]);
        qDebug()<<"Datatosend[7]              :--------"<<dtobin(castData[7]);
-      qDebug()<<"Datatosend[8]              :--------"<<dtobin(castData[8]);
+      qDebug()<<"Datatosend[8]              :--------"<<dtobin(castData[8]); */
       qDebug()<<robot.DataToSend.toHex().toUpper()<<"\n";
 
 }
@@ -235,38 +238,27 @@ void OP::envoi()
 
 void OP::on_pause_clicked()
 {
-     qDebug() << this->pause;
-      unsigned char* castData=  (unsigned char*)this->robot.DataToSend.data();
+    QPixmap screenshot =QPixmap();
+    screenshot = QPixmap::grabWidget(this->view);
+    QString format = "png";
+    QString initialPath = QDir::currentPath() + tr("/untitled.") + format;
 
-    //Test de la variable pause afin de mettre
-    if(this->pause==false){
-        ui->pause->setIcon(QIcon(":/images/play.svg"));
-        ui->pause->setStyleSheet("background-color: rgb(255, 0, 0);");
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
+                                   initialPath,
+                                   tr("%1 Files (*.%2);;All Files (*)")
+                                   .arg(format.toUpper())
+                                   .arg(format));
+        if (!fileName.isEmpty()){
 
-        //test de l'exemple
-        this->robot.DataToSend[6]=0xF0;
-        this->robot.DataToSend[4]=0x00;
-        this->robot.DataToSend[2]=0x00;
-        this->robot.DataToSend[3]=0x00;
-        this->robot.DataToSend[5]=0x00;
+            screenshot.save(fileName, format.toUtf8());
 
-        short crc=Crc16(castData+1,6);
-        this->robot.DataToSend[7]=(char)crc;
-        this->robot.DataToSend[8]=(char)(crc>>8);
+        }else{
+            // On déclenche un audio quand ca marche pas
+
+        }
 
 
 
-        this->pause=true;
-        qDebug() << "Dnas le play ";
-        qDebug() << this->pause;
-    }
-    else{
-        ui->pause->setIcon(QIcon(":/images/pause.svg"));
-        ui->pause->setStyleSheet("background-color: rgb(0,255, 0);");
-
-        this->pause=false;
-
-    }
 
 }
 
@@ -309,46 +301,68 @@ void OP::miseAJour(){
     if(this->demarrer){
          emit updateUI(robot.DataReceived);
         int BatVoltage;
-        int SpeedFrontLeft;
-        int SpeedRearLeft;
-        int SpeedFrontRight, SpeedRearRight, IRLeft, IRRight;
+        int vitesseAvD;
+        int vitesseAvG;
+        int vitesseArD;
+        int vitesseArG;
+        int irAvG;
+        int irAvD;
+        int irArG;
+        int irArD;
+        int odoAvG;
+        int odoAvD;
+        int odoArG;
+        int odoArD;
+        /*int SpeedFrontRight, SpeedRearRight, IRLeft, IRRight;
         this->BatVoltage=(int)robot.DataReceived[2];
         long odometry=( (((long)robot.DataReceived[8]<<24))+(((long)robot.DataReceived[7]<<16))+(((long)robot.DataReceived[6]<<8))+(((long)robot.DataReceived[5])));
+        */
+         this->BatVoltage=(int)robot.DataReceived[2];
+        vitesseAvD=(int)robot.DataReceived[0];
+        vitesseArD=(int)robot.DataReceived[1];
+
+        vitesseAvG=(int)robot.DataReceived[9];
+        vitesseArG=(int)robot.DataReceived[10];
+
+        irAvD=(int)robot.DataReceived[3];
+        irAvG=(int)robot.DataReceived[4];
+
+        irArD=(int)robot.DataReceived[11];
+        irArG=(int)robot.DataReceived[12];
+
+        odoAvD=(float)robot.DataReceived[5];
+        odoAvG=(float)robot.DataReceived[6];
+
+        odoArD=(float)robot.DataReceived[7];
+        odoArG=(float)robot.DataReceived[8];
+
+
 
 
          qDebug()<<"BatVoltage ::-----------------------"<<this->BatVoltage;
-         qDebug()<<"BatVoltage ::-----------------------"<<odometry;
+        // qDebug()<<"BatVoltage ::-----------------------"<<odometry;
         /*
          * BatVoltage=(in)robot.DataReceived[2];
          *
          * int IR=(unsigned
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           */
          //Mise à jour des valeurs recupere par intervalles de 2 s
-         int ondo=(int)odometry;
+       // BatVoltage=(int)robot.DataReceived[2];
           ui->batterieBar->setValue(this->BatVoltage);
-          ui->odometrie->display(ondo);
+          ui->vitAvd->display(vitesseAvD);
+          ui->vitAvg->display(vitesseAvG);
+          ui->vitArd->display(vitesseArD);
+          ui->vitArg->display(vitesseArG);
 
-          ui->energie->display(0);
-          ui->ticRight->display(0);
-          ui->ticLeft->display(0);
+          ui->irAvd->display(irAvD);
+          ui->irAvg->display(irAvG);
+          ui->irArd->display(irArD);
+          ui->irArg->display(irArG);
 
-
+          ui->odoAvd->display(odoAvD);
+          ui->odoAvg->display(odoAvG);
+          ui->odoArd->display(odoArD);
+          ui->odoArg->display(odoArG);
       }
     else{
         ui->batterieBar->setValue(0);
@@ -359,48 +373,120 @@ void OP::miseAJour(){
 
 }
 void OP::keyPressEvent(QKeyEvent *event){
-    qDebug()<<"UPPPPPPPPPP11111111111";
+    //qDebug()<<"UPPPPPPPPPP11111111111";
     switch(event->key()){
-                qDebug()<<"UPPPPPPPPPP333333333";
-                case Qt::Key_Up:
-                    qDebug()<<"UPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPUPUPUPUPUPUPUPUPUPUPUPUPUPPUPUPUPUPUPUPU";
-                    this->on_avancer_pressed();
-                    ui->avancer->setStyleSheet("background-color: rgb(0, 170, 0);");
-                    ui->avancer->setStyleSheet("border-radius:15px;");
-                break;
-                case Qt::Key_Down:
-                    this->on_reculer_pressed();
-                break;
-                case Qt::Key_Left:
-                      this->on_gauche_pressed();
-                break;
-                case Qt::Key_Right:
-                        this->on_droite_pressed();
-                break;
+
+
+
+
+
+
+// Controle du deplacement de la camera
+    case Qt::Key_K:
+        camera->get(QNetworkRequest(QUrl("http://"+text+":8080/?action=command&dest=0&plugin=0&id=10094852&group=1&value=200")));
+        this->view->show();
+        break;
+    case Qt::Key_L:
+        camera->get(QNetworkRequest(QUrl("http://"+text+":8080/?action=command&dest=0&plugin=0&id=10094853&group=1&value=200")));
+        this->view->show();
+        break;
+    case Qt::Key_O:
+        camera->get(QNetworkRequest(QUrl("http://"+text+":8080/?action=command&dest=0&plugin=0&id=10094853&group=1&value=-200")));
+        this->view->show();
+        break;
+    case Qt::Key_M:
+        camera->get(QNetworkRequest(QUrl("http://"+text+":8080/?action=command&dest=0&plugin=0&id=10094852&group=1&value=-200")));
+        this->view->show();
+        break;
+
+
+
+
+
+
+
+    case Qt::Key_Z:
+
+        qDebug()<<"UPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
+          ui->avancer->animateClick(25);
+            this->on_avancer_pressed();
+          ui->avancer->setStyleSheet("background-color: rgb(0, 250, 0);");
+          ui->avancer->setStyleSheet("border-radius:15px;");
+
+        break;
+    case Qt::Key_Q:
+        qDebug()<<"DROITEEEEEEEEEEEEEEEEEEEEEEEEEEEEE";
+          ui->droite->animateClick(25);
+            this->on_droite_pressed();
+          ui->droite->setStyleSheet("background-color: rgb(0, 250, 0);");
+          ui->droite->setStyleSheet("border-radius:15px;");
+
+
+        break;
+    case Qt::Key_S:
+        qDebug()<<"DOWNNNNNNNNNNNNNNNNNNNNN";
+          ui->reculer->animateClick(25);
+            this->on_reculer_clicked();
+          ui->reculer->setStyleSheet("background-color: rgb(0, 250, 0);");
+          ui->reculer->setStyleSheet("border-radius:15px;");
+
+        break;
+    case Qt::Key_D:
+        qDebug()<<"LEFTTTTTTTTTTTTTTTTTTTTTTTTTT";
+          ui->droite->animateClick(25);
+            this->on_gauche_pressed();
+          ui->droite->setStyleSheet("background-color: rgb(0, 250, 0);");
+          ui->droite->setStyleSheet("border-radius:15px;");
+
+
+        break;
+
 
     }
-    qDebug()<<"UPPPPPPPPPP222222222";
+
 }
 void OP::keyReleaseEvent(QKeyEvent *event){
     switch(event->key()){
-                case Qt::Key_Up:
-                    ui->avancer->animateClick(25);
-                break;
-                case Qt::Key_Down:
-                    this->on_reculer_released();
-                break;
-                case Qt::Key_Left:
-                    this->on_gauche_released();
-                break;
-                case Qt::Key_Right:
-                   this->on_droite_released();
-                break;
+    case Qt::Key_Z:
+
+        qDebug()<<"UPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
+          ui->avancer->animateClick(25);
+            this->on_avancer_pressed();
+          ui->avancer->setStyleSheet("background-color: rgb(0, 0, 0);");
+          ui->avancer->setStyleSheet("border-radius:0px;");
+
+        break;
+    case Qt::Key_Q:
+        qDebug()<<"DROITEEEEEEEEEEEEEEEEEEEEEEEEEEEEE";
+          ui->gauche->animateClick(25);
+          ui->gauche->setStyleSheet("background-color: rgb(0, 0, 0);");
+          ui->gauche->setStyleSheet("border-radius:0px;");
+
+
+
+        break;
+    case Qt::Key_S:
+        qDebug()<<"DOWNNNNNNNNNNNNNNNNNNNNN";
+          ui->reculer->animateClick(25);
+          ui->reculer->setStyleSheet("background-color: rgb(0, 0, 0);");
+          ui->reculer->setStyleSheet("border-radius:0px;");
+
+
+        break;
+    case Qt::Key_D:
+        qDebug()<<"LEFTTTTTTTTTTTTTTTTTTTTTTTTTT";
+        ui->droite->animateClick(25);
+        ui->droite->setStyleSheet("background-color: rgb(0, 0, 0);");
+        ui->droite->setStyleSheet("border-radius:0px;");
+
+
+
+        break;
+
+
 
     }
 }
-
-
-
 
 void OP::on_gauche_clicked()
 {
@@ -420,6 +506,7 @@ void OP::on_gauche_released()
 
 void OP::on_avancer_pressed()
 {
+   // qDebug()<<"UPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPUPUPUPUPUPUPUPUPUPUPUPUPUPPUPUPUPUPUPUPU";
     wifibot[0]=true;
 }
 

@@ -4,7 +4,7 @@
 #include "myrobot.h"
 #include <QDialog>
 #include "math.h"
-#include  <QKeyEvent>
+
 #include <QTimer>
 #include <QWebEngineView>
 #include <QString>
@@ -33,8 +33,11 @@ private slots:
 
     void on_pause_clicked();
 
+
+
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+
 
     short Crc16(unsigned char *Adresse_tab ,unsigned char Taille_max);
 
@@ -86,6 +89,8 @@ private:
     bool* wifibot;
     QWebEngineView* view;
    // QTimer *timer2;
+      QNetworkAccessManager *camera;
+      QString text;
 };
 
 #endif // OP_H

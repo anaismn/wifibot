@@ -10,6 +10,7 @@
         <file>down.svg</file>
         <file>left.svg</file>
         <file>up.svg</file>
+        <file>webcam.png</file>
     </qresource>
     <qresource prefix="/">
         <file>logoapp.png</file>
