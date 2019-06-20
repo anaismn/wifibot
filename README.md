@@ -12,7 +12,7 @@ La première étape est  bien sûr d'établir une connexion avec le robot. Pour 
 ## Contrôles directionnels
 Tout d'abord il est impératif de consulter le [protocol wifi](chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/http://www.wifibot.com/download/2012/Raw_Ethernet_Wifi_protocol_2012.pdf) puisque c'est par cette technologie que la connexion sera maintenue.
 
-Nous allons utilisé du TCP. On va donc envoyer 9 char
+Nous allons utilisé du TCP. On va donc envoyer 9 char \n
 **_Char 1 ->_** = 255
 **_Char 2 ->_** est la taille (ici 0*07)
 **_Char 3-4 ->_** vitesse gauche [0->240 tics max]
